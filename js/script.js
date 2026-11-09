@@ -1,68 +1,43 @@
 console.log("script.js loaded");
 
-const API_KEY = "PASTE_YOUR_GIPHY_API_KEY_HERE";
-const endpoint = "https://api.giphy.com/v1/gifs/search";
-const searchInput = document.querySelector("#search-input");
-const fetchButton = document.querySelector("#fetch-gif-btn");
+const endpoint = "https://api.giphy.com/v1/stickers/search?api_key=&q=dogs&limit=25&offset=0&rating=g&lang=en&bundle=messaging_non_clips";
+
 const gifContainer = document.querySelector("#gif-container");
-const statusMessage = document.createElement("p");
-statusMessage.className = "text-center";
-statusMessage.setAttribute("role", "status");
-gifContainer.parentNode.insertBefore(statusMessage, gifContainer);
+const fetchButton = document.querySelector("#fetch-gif-btn");
 
 async function fetchAndDisplayGifs() {
-  const query = searchInput.value.trim();
-  if (!query) {
-    statusMessage.textContent = "Enter a search term.";
-    return;
-  }
+    const apiKey = 'pIhfbYyalYFITaFP6woRu8CBLevEzUE9';
+    try {
+        const response = await fetch(endpoint.replace("api_key=", `api_key=${apiKey}`));
+        const jsonResponse = await response.json();
 
-  if (API_KEY === "PASTE_YOUR_GIPHY_API_KEY_HERE") {
-    statusMessage.textContent = "Add your GIPHY API key in js/script.js before searching.";
-    return;
-  }
+        const images = jsonResponse.data.map(gif => gif.images.original.url);
 
-  const params = new URLSearchParams({
-    api_key: API_KEY,
-    q: query,
-    limit: "25",
-    rating: "g",
-  });
+        console.log("Fetched Image URLS:", images);
 
-  statusMessage.textContent = "Loading GIFs...";
-  gifContainer.replaceChildren();
+        gifContainer.innerHTML = "";
 
-  try {
-    const response = await fetch(`${endpoint}?${params}`);
-    const jsonResponse = await response.json();
-    if (!response.ok) {
-      throw new Error(jsonResponse.meta?.msg || `GIPHY request failed (${response.status}).`);
+        images.forEach(url => {
+            const imgElement = document.createElement("img");
+            imgElement.src = url;
+            imgElement.alt = "Giphy GIF";
+            imgElement.style.margin = "10px";
+            imgElement.style.width = "200px";
+
+            gifContainer.appendChild(imgElement);
+        });
+    } catch (error) {
+        console.error("Error fetching data from Giphy:", error);
     }
-
-    const gifs = jsonResponse.data ?? [];
-    if (gifs.length === 0) {
-      statusMessage.textContent = "No GIFs found. Try another search.";
-      return;
-    }
-
-    gifs.forEach((gif) => {
-      const column = document.createElement("div");
-      column.className = "col-6 col-md-4 col-lg-3 mb-3";
-
-      const image = document.createElement("img");
-      image.src = gif.images.fixed_width.url;
-      image.alt = gif.title || `GIF matching ${query}`;
-      image.className = "img-fluid rounded";
-      image.loading = "lazy";
-
-      column.appendChild(image);
-      gifContainer.appendChild(column);
-    });
-    statusMessage.textContent = `Showing ${gifs.length} GIFs for "${query}".`;
-  } catch (error) {
-    console.error("Error fetching GIFs from GIPHY:", error);
-    statusMessage.textContent = error.message || "Could not load GIFs. Check your connection and API key.";
-  }
 }
 
-fetchButton.addEventListener("click", fetchAndDisplayGifs);
+fetchButton.addEventListener("click", asyng () => {
+    gifContainer.innerHTML = '';
+    const images = await fetchGIFS();
+
+    if (images) {
+        images.forEach(imageURLL => {
+            gifContainer.innerHTML += '<img src="https://api.giphy.com/v1/stickers/search?api_key=&q=dogs&limit=25&offset=0&rating=g&lang=en&bundle=messaging_non_clips" class="col-3 mb-3">';
+        });
+    }
+});
